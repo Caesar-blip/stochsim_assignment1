@@ -1,9 +1,10 @@
 from PIL import Image
 import colorsys
 import math
-import os
 import numpy as np
 import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
+from tqdm import notebook
 
 class mendelSim():
     def __init__(self, width = 1000, x =-0.65, y = 0, xRange = 3.4, aspectRatio = 4/3, 
@@ -14,7 +15,7 @@ class mendelSim():
         self.simStrat = simStrat
         
         
-        #frame parameters
+        # frame parameters
         self.width = width #pixels
         self.x = x
         self.y = y
@@ -62,7 +63,7 @@ class mendelSim():
             if i == self.precision:
                 inCount += 1
             if self.draw: 
-                rgb = self.redBlue(i, 0.2, 0.27, 1.0)
+                rgb = self.redBlue(i)
                 self.pixels[coordinates[0][c],coordinates[1][c]] = rgb
 
 
@@ -128,19 +129,15 @@ class mendelSim():
         return (x, y)
     
     
-    def logColor(self, distance, base, const, scale):
-        color = -1 * math.log(distance, base)
-        rgb = colorsys.hsv_to_rgb(const + scale * color,0.8,0.9)
-        return tuple(round(i * 255) for i in rgb)
-
-    
     def powerColor(self, distance, exp, const, scale):
+        # color a pixel dependent on how long the belonging values took to diverge
         color = distance**exp
         rgb = colorsys.hsv_to_rgb(const + scale * color,1 - 0.6 * color,0.9)
         return tuple(round(i * 255) for i in rgb)
 
     
-    def redBlue(self, distance, exp, const, scale):
+    def redBlue(self, distance):
+        # color a pixel depending on it's divergence. Red for diverging and green for not diverging.
         if distance == self.precision:
             rgb = (0,255,0)
         else:
