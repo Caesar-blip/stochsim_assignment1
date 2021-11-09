@@ -75,10 +75,6 @@ class mendelSim():
         areaMendel = areaPicture * percentageMendel
         
         
-        print(f"incount: {inCount}")
-        print(f"areapic: {areaPicture}")
-        print(f"percentin: {percentageMendel}")
-        print(f"areain: {areaMendel}")
         return areaMendel
     
     
