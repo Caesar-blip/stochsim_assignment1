@@ -41,7 +41,6 @@ class mendelSim():
         if self.simStrat == "random":
             coordinates = self.getCoordinates()
         elif self.simStrat == "latin":
-            assert self.height == self.width
             coordinates = self.getLatinCube()
         elif self.simStrat == "orthogonal":
             #TODO
@@ -71,7 +70,7 @@ class mendelSim():
             self.img.save('output.png')
 
         areaPicture = self.xRange * self.yRange
-        percentageMendel = inCount/self.num_points
+        percentageMendel = inCount/len(coordinates[0])
         areaMendel = areaPicture * percentageMendel
         
         
@@ -105,6 +104,7 @@ class mendelSim():
         
                     
     def getCoordinates(self):
+        # returns random coordinates on a grid 
         x = []
         y = []
         for i in range(self.num_points):
@@ -114,6 +114,9 @@ class mendelSim():
     
     
     def getLatinCube(self):
+        # returns a cube with one coordinate in every row and column
+        # check if the input is a cube
+        assert self.height == self.width
         x = []
         y = []
         possibilities = np.arange(self.width)
