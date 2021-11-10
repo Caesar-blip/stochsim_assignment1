@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from tqdm import notebook
+import random
+
 
 class mendelSim():
     def __init__(self, width = 1000, x =-0.65, y = 0, xRange = 3.4, aspectRatio = 4/3, 
@@ -44,7 +46,7 @@ class mendelSim():
         elif self.simStrat == "latin":
             coordinates = self.getLatinCube()
         elif self.simStrat == "orthogonal":
-            #TODO
+            coordinates = self.getOrthogonal()
             pass
         else:
             raise ValueError
@@ -117,7 +119,7 @@ class mendelSim():
     def getLatinCube(self):
         # returns a cube with one coordinate in every row and column
         # check if the input is a cube
-        assert self.height == self.width
+        assert self.height == self.width, "the aspect ratio should be 1"
         x = []
         y = []
         possibilities = np.arange(self.width)
@@ -128,7 +130,36 @@ class mendelSim():
 
         return (x, y)
     
-    
+
+    #https://codereview.stackexchange.com/questions/207610/orthogonal-sampling
+    def getOrthogonal(self):
+        assert self.height == self.width, "Make sure that aspect ratio is 1"
+        assert np.sqrt(self.width) % 1 == 0,"Please insert a width of which the square root is an integer"
+        n = int(np.sqrt(self.width))
+        # Making a datastructure of a dict with coordinate tuples of a bigger grid with subcoordinate of sub-grid points
+        blocks = {(i,j):[(a,b) for a in range(n) for b in range(n)] for i in range(n) for j in range(n)}
+        x = []
+        y = []
+        appendx = x.append
+        appendy = y.append
+        for block in blocks:
+            # select a random minor cell from every major cell
+            point = random.choice(blocks[block])
+            lst_row = [(k1, b) for (k1, b), v in blocks.items() if k1 == block[0]]
+            lst_col = [(a, k1) for (a, k1), v in blocks.items() if k1 == block[1]]
+
+            for col in lst_col:
+                blocks[col] = [a for a in blocks[col] if a[1] != point[1]]
+
+            for row in lst_row:
+                blocks[row] = [a for a in blocks[row] if a[0] != point[0]]
+           #Adjust the points to fit the grid they fall in  
+            appendx(point[0] + n * block[0])
+            appendy(point[1] + n * block[1])
+
+        return (x, y)
+
+
     def powerColor(self, distance, exp, const, scale):
         # color a pixel dependent on how long the belonging values took to diverge
         color = distance**exp
