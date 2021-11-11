@@ -107,7 +107,11 @@ class mendelSim():
         
                     
     def getCoordinates(self):
-        # returns random coordinates on a grid 
+        """creates random coordinates depending on the requested number of cooridnates
+
+        Returns:
+            (list[floats], list[floats]): row, column
+        """
         x = []
         y = []
         for i in range(self.num_points):
@@ -117,8 +121,11 @@ class mendelSim():
     
     
     def getLatinCube(self):
-        # returns a cube with one coordinate in every row and column
-        # check if the input is a cube
+        """creates random coordinates ordered in a latin hypercube
+
+        Returns:
+            (list[floats], list[floats]): row, column
+        """
         assert self.height == self.width, "the aspect ratio should be 1"
         x = []
         y = []
@@ -133,6 +140,11 @@ class mendelSim():
 
     #https://codereview.stackexchange.com/questions/207610/orthogonal-sampling
     def getOrthogonal(self):
+        """creates random coordinates ordered orthogonally in a latin hypercube
+
+        Returns:
+            (list[floats], list[floats]): row, column
+        """
         assert self.height == self.width, "Make sure that aspect ratio is 1"
         assert np.sqrt(self.width) % 1 == 0,"Please insert a width of which the square root is an integer"
         n = int(np.sqrt(self.width))
