@@ -47,7 +47,9 @@ class mendelSim():
             coordinates = self.getLatinCube()
         elif self.simStrat == "orthogonal":
             coordinates = self.getOrthogonal()
-            pass
+        elif self.simStrat == "orthogonalFast":
+            coordinates = self.getOrthogonalFast()
+        
         else:
             raise ValueError
         for c in range(len(coordinates[0])):
@@ -79,7 +81,7 @@ class mendelSim():
         
         return areaMendel
     
-    
+    #https://medium.com/swlh/visualizing-the-mandelbrot-set-using-python-50-lines-f6aa5a05cf0f
     def drawPicture(self):
         # draw mandelbrot image
         self.img = Image.new('RGB', (self.width, self.height), color = 'white')
@@ -171,6 +173,9 @@ class mendelSim():
 
         return (x, y)
 
+
+    def getOrthogonalFast(self):
+        pass
 
     def powerColor(self, distance, exp, const, scale):
         # color a pixel dependent on how long the belonging values took to diverge
