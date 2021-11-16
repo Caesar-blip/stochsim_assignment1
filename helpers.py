@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from tqdm import notebook
 import random
-
+import scipy.stats as st
 
 class mendelSim():
     def __init__(self, width = 1000, x =-0.65, y = 0, xRange = 3.4, aspectRatio = 4/3, 
@@ -174,8 +174,46 @@ class mendelSim():
         return (x, y)
 
 
+    def permute(self, l, N):
+        for i in range(N-1, 0, -1):
+            before = l[i]
+            new = np.random.randint(0,i+1)
+            l[i] = l[new]
+            l[new] = before
+
+        return l
+
+
     def getOrthogonalFast(self):
-        pass
+        major = int(np.sqrt(self.num_points))
+        # intialise the x and y lists
+        # the xlist keeps track what minor column has the sample in major cell with major cell i, j
+        # the ylist does the same for the minor row
+        xlist = np.zeros((major,major), np.int32)
+        ylist = np.zeros((major,major), np.int32)
+
+        # start with the most simple solution
+        m = 0
+        for i in range(major):
+            for j in range(major):
+                xlist[i][j] = m
+                ylist[j][i] = m
+                m += 1
+
+        for i in range(major):
+            xlist[i] = self.permute(xlist[i], major)
+            ylist[i] = self.permute(ylist[i], major)
+        
+        x = []
+        y = []
+        xappend = x.append
+        yappend = y.append
+        for i in range(major):
+            for j in range(major):
+                xappend(x[i][j])
+                yappend(y[i][j])
+        return (x,y)
+
 
     def powerColor(self, distance, exp, const, scale):
         # color a pixel dependent on how long the belonging values took to diverge
