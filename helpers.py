@@ -185,7 +185,7 @@ class mendelSim():
 
 
     def getOrthogonalFast(self):
-        major = int(np.sqrt(self.num_points))
+        major = int(np.sqrt(self.width))
         # intialise the x and y lists
         # the xlist keeps track what minor column has the sample in major cell with major cell i, j
         # the ylist does the same for the minor row
@@ -210,8 +210,8 @@ class mendelSim():
         yappend = y.append
         for i in range(major):
             for j in range(major):
-                xappend(x[i][j])
-                yappend(y[i][j])
+                xappend(xlist[i][j])
+                yappend(ylist[i][j])
         return (x,y)
 
 
