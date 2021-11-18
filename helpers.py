@@ -30,12 +30,23 @@ class mendelSim():
         self.maxX = self.x + self.xRange / 2
         self.minY = self.y - self.yRange / 2
         self.maxY = self.y + self.yRange / 2
+        if simStrat == "antiThetic":
+            self.minY = 0
+            self.maxY = self.y + self.yRange
         
         self.num_points = num_points
         self.precision = precision
     
     
     def run_sim(self):
+        """Runs a Monte Carlo simulation using the defined strategy on the Mendelbrot set.
+
+        Raises:
+            ValueError: The strategy should be one of the predefined strategies.
+
+        Returns:
+            float: estimated area of the mendelbrot set.
+        """
         if self.draw: 
             self.drawPicture()
                         
@@ -157,6 +168,15 @@ class mendelSim():
 
 
     def permute(self, l, N):
+        """changes a list into a random order of itself
+
+        Args:
+            l (list): the list that will be permuted
+            N (INT): The number of times the list will be shuffled
+
+        Returns:
+            list: a permutation of the input list
+        """
         for i in range(N-1, 0, -1):
             before = l[i]
             new = np.random.randint(0,i+1)
@@ -167,6 +187,11 @@ class mendelSim():
 
 
     def getOrthogonalFast(self):
+        """Fastly creates an orthogonal latin hypercube.
+
+        Returns:
+            [(floats, floats)]: A list containing a tuple with the x coordinates on the first entry and the y coordinates on the second entry.
+        """
         assert self.height == self.width, "Make sure that aspect ratio is 1"
         assert np.sqrt(self.width) % 1 == 0,"Please insert a width of which the square root is an integer"
         
@@ -203,18 +228,25 @@ class mendelSim():
 
 
     def getAntithetic(self):
+        """creates Antithetic coordinates, so the variance of sampling will be lowered
+
+        Returns:
+            [(floats, floats)]: A list containing a tuple with the x coordinates on the first entry and the y coordinates on the second entry.
+        """
         x = np.random.random(round(self.num_points/2))
         y = np.random.random(round(self.num_points/2))
         x_ = 1-x
         y_ = 1-y
         xs = np.concatenate((x, x_))
         ys = np.concatenate((y, y_))
+
         return([i*self.width for i in xs], [i*self.height for i in ys])
 
 
     #https://medium.com/swlh/visualizing-the-mandelbrot-set-using-python-50-lines-f6aa5a05cf0f
     def drawPicture(self):
-        # draw mandelbrot image
+        """creates an image of the Monte Carlo simulation on the Mendelbrot set.
+        """
         self.img = Image.new('RGB', (self.width, self.height), color = 'white')
         self.pixels = self.img.load()
         for row in range(self.height):
@@ -239,7 +271,17 @@ class mendelSim():
 
 
     def powerColor(self, distance, exp, const, scale):
-        # color a pixel dependent on how long the belonging values took to diverge
+        """Chooses colors depending on the depth until convergences in the Mendelbrot set.
+
+        Args:
+            distance (int): The amount of iterations until the coordinates convergenced.
+            exp (int): Settings for choosing the color palet.
+            const (int): Settings for choosing the color palet.
+            scale (int): Settings for choosing the color palet.
+
+        Returns:
+            tuple: A tuple of colors in RGB format
+        """
         color = distance**exp
         rgb = colorsys.hsv_to_rgb(const + scale * color,1 - 0.6 * color,0.9)
         return tuple(round(i * 255) for i in rgb)
@@ -255,10 +297,15 @@ class mendelSim():
 
 
 
-
-# sort the results normally
 def getResults(inpSort):
-    # sort the results
+    """Sorts the results of a shuffled input.
+
+    Args:
+        inpSort (np.array(3,n)): A result that has a independent variable in the first index and a dependent variable in the second.
+
+    Returns:
+        np.array(2,n): A numpy array sorted on the independent variable.
+    """
     results = []
     for entry in range(len(inpSort[0])):
         results.append((inpSort[0][entry], inpSort[1][entry]))
@@ -274,10 +321,19 @@ def getResults(inpSort):
     
     return resultsArray
 
-
-
-    # create a bar plot with a specified number of bins
+    
 def createBars(bars, result, title, filename):
+    """Creates a barplot with confidence intervals of results.
+
+    Args:
+        bars (int): The amount of bars requested
+        result (np.array(2,n)): A numpy array containing a independent variable in the first index and a dependent variable in the second index.
+        title (string): A title for the plot
+        filename (string): A location for the plot to be saved
+
+    Returns:
+        list, list: Returns a list of standard deviations and a list of means for every bar in order.
+    """
     resultsArray = getResults(result)
     means = []
     stds = []
