@@ -49,9 +49,11 @@ class mendelSim():
             coordinates = self.getOrthogonal()
         elif self.simStrat == "orthogonalFast":
             coordinates = self.getOrthogonalFast()
-        
+        elif self.simStrat =="antiThetic":
+            coordinates = self.getAntithetic()
         else:
-            raise ValueError
+            raise ValueError(404)
+
         for c in range(len(coordinates[0])):
             x = self.minX + coordinates[0][c] * self.xRange / self.width
             y = self.maxY - coordinates[1][c] * self.yRange / self.height
@@ -80,48 +82,28 @@ class mendelSim():
         
         
         return areaMendel
-    
-    #https://medium.com/swlh/visualizing-the-mandelbrot-set-using-python-50-lines-f6aa5a05cf0f
-    def drawPicture(self):
-        # draw mandelbrot image
-        self.img = Image.new('RGB', (self.width, self.height), color = 'white')
-        self.pixels = self.img.load()
-
-        for row in range(self.height):
-            for col in range(self.width):
-                x = self.minX + col * self.xRange / self.width
-                y = self.maxY - row * self.yRange / self.height
-                oldX = x
-                oldY = y
-                for i in range(self.precision + 1):
-                    a = x*x - y*y #real component of z^2
-                    b = 2 * x * y #imaginary component of z^2
-                    x = a + oldX #real component of new z
-                    y = b + oldY #imaginary component of new z
-                    if x*x + y*y > 4:
-                        break
-                if i < self.precision:
-                    rgb = (0,0,0)
-                    if self.niceColors:
-                        distance = (i + 1) / (self.precision + 1)
-                        rgb = self.powerColor(distance, 0.2, 0.27, 1.0)
-                    self.pixels[col,row] = rgb
-        
+            
                     
     def getCoordinates(self):
-        """creates random coordinates depending on the requested number of cooridnates
+        """creates random coordinates depending on the requested number of coordinates
 
         Returns:
             (list[floats], list[floats]): row, column
         """
+        # this code is 7 times slower for some reason, interesting to find out why
+        #return(list(np.random.random(self.num_points)*self.width), list(np.random.random(self.num_points)*self.height))
+        
         x = []
         y = []
+        xappend = x.append
+        yappend = y.append
         for i in range(self.num_points):
-            x.append(np.random.random())
-            y.append(np.random.random())
+            xappend(np.random.random())
+            yappend(np.random.random())
+        
         return ([i*self.width for i in x], [i*self.height for i in y])
     
-    
+
     def getLatinCube(self):
         """creates random coordinates ordered in a latin hypercube
 
@@ -185,6 +167,10 @@ class mendelSim():
 
 
     def getOrthogonalFast(self):
+        assert self.height == self.width, "Make sure that aspect ratio is 1"
+        assert np.sqrt(self.width) % 1 == 0,"Please insert a width of which the square root is an integer"
+        
+        
         major = int(np.sqrt(self.width))
         # intialise the x and y lists
         # the xlist keeps track what minor column has the sample in major cell with major cell i, j
@@ -200,6 +186,7 @@ class mendelSim():
                 ylist[j][i] = m
                 m += 1
 
+        # get a random solution
         for i in range(major):
             xlist[i] = self.permute(xlist[i], major)
             ylist[i] = self.permute(ylist[i], major)
@@ -213,6 +200,42 @@ class mendelSim():
                 xappend(xlist[i][j])
                 yappend(ylist[i][j])
         return (x,y)
+
+
+    def getAntithetic(self):
+        x = np.random.random(round(self.num_points/2))
+        y = np.random.random(round(self.num_points/2))
+        x_ = 1-x
+        y_ = 1-y
+        xs = np.concatenate((x, x_))
+        ys = np.concatenate((y, y_))
+        return([i*self.width for i in xs], [i*self.height for i in ys])
+
+
+    #https://medium.com/swlh/visualizing-the-mandelbrot-set-using-python-50-lines-f6aa5a05cf0f
+    def drawPicture(self):
+        # draw mandelbrot image
+        self.img = Image.new('RGB', (self.width, self.height), color = 'white')
+        self.pixels = self.img.load()
+        for row in range(self.height):
+            for col in range(self.width):
+                x = self.minX + col * self.xRange / self.width
+                y = self.maxY - row * self.yRange / self.height
+                oldX = x
+                oldY = y
+                for i in range(self.precision + 1):
+                    a = x*x - y*y #real component of z^2
+                    b = 2 * x * y #imaginary component of z^2
+                    x = a + oldX #real component of new z
+                    y = b + oldY #imaginary component of new z
+                    if x*x + y*y > 4:
+                        break
+                if i < self.precision:
+                    rgb = (0,0,0)
+                    if self.niceColors:
+                        distance = (i + 1) / (self.precision + 1)
+                        rgb = self.powerColor(distance, 0.2, 0.27, 1.0)
+                    self.pixels[col,row] = rgb
 
 
     def powerColor(self, distance, exp, const, scale):
@@ -229,3 +252,48 @@ class mendelSim():
         else:
             rgb = (255,0,0)
         return rgb
+
+
+
+
+# sort the results normally
+def getResults(inpSort):
+    # sort the results
+    results = []
+    for entry in range(len(inpSort[0])):
+        results.append((inpSort[0][entry], inpSort[1][entry]))
+    
+    def getKey(item):
+        return item[0]
+
+    resultsSorted = sorted(results, key=getKey)
+    resultsArray = np.zeros((2, len(inpSort[0])), dtype=float)
+    for i in range(len(inpSort[0])):
+        resultsArray[0][i] = float(resultsSorted[i][0])
+        resultsArray[1][i] = float(resultsSorted[i][1])
+    
+    return resultsArray
+
+
+
+    # create a bar plot with a specified number of bins
+def createBars(bars, result, title, filename):
+    resultsArray = getResults(result)
+    means = []
+    stds = []
+    currIndex = 0
+    for bar in range(bars):
+        nextIndex = int(currIndex + len(resultsArray[1])/bars)
+        means.append(np.mean(resultsArray[1][currIndex:nextIndex]))
+        stds.append(np.std(resultsArray[1][currIndex:nextIndex]))
+        currIndex = nextIndex
+
+
+    fig, ax = plt.subplots()
+    ax.bar(np.arange(bars), means, yerr=stds, align='center', alpha=0.5, ecolor='black', capsize=10)
+    ax.set_title(title)
+    ax.set_ylabel("estimated area")
+    plt.savefig(filename)
+    return stds, means
+
+
