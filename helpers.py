@@ -91,7 +91,10 @@ class mendelSim():
         percentageMendel = inCount/len(coordinates[0])
         areaMendel = areaPicture * percentageMendel
         
-        
+        if self.simStrat == "antiThetic":
+            areaMendel *= 2
+
+
         return areaMendel
             
                     
@@ -347,7 +350,7 @@ def createBars(bars, result, title, filename):
 
     fig, ax = plt.subplots()
     ax.bar(np.arange(bars), means, yerr=stds, align='center', alpha=0.5, ecolor='black', capsize=10)
-    ax.set_title(title)
+    ax.set_title(title + f"\nfinal standard deviation was {stds[-1]}")
     ax.set_ylabel("estimated area")
     plt.savefig(filename)
     return stds, means
