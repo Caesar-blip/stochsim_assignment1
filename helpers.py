@@ -1,12 +1,11 @@
 from PIL import Image
 import colorsys
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from tqdm import notebook
 import random
-import scipy.stats as st
+
 
 class mendelSim():
     def __init__(self, width = 1000, x =-0.65, y = 0, xRange = 3.4, aspectRatio = 4/3, 
@@ -104,9 +103,6 @@ class mendelSim():
         Returns:
             (list[floats], list[floats]): row, column
         """
-        # this code is 7 times slower for some reason, interesting to find out why
-        #return(list(np.random.random(self.num_points)*self.width), list(np.random.random(self.num_points)*self.height))
-        
         x = []
         y = []
         xappend = x.append
@@ -350,7 +346,7 @@ def createBars(bars, result, title, filename):
 
     fig, ax = plt.subplots()
     ax.bar(np.arange(bars), means, yerr=stds, align='center', alpha=0.5, ecolor='black', capsize=10)
-    ax.set_title(title + f"\nfinal standard deviation was {stds[-1]}")
+    ax.set_title(title + f"\nfinal standard deviation was {stds[-1]}\nfinal estimated area was {means[-1]}")
     ax.set_ylabel("estimated area")
     plt.savefig(filename)
     return stds, means
